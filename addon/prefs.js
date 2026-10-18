@@ -1,0 +1,11 @@
+pref("voice", "af_heart");
+pref("speed", "1.0");
+pref("dtype", "fp16");
+pref("mirror", "https://huggingface.co");
+pref("modelDir", "");
+pref("stripCitations", true);
+pref("shortcut", "alt,shift,r");
+pref("workers", 0);
+pref("stopAtReferences", true);
+pref("preload", true);
+pref("unloadAfterMinutes", 30);

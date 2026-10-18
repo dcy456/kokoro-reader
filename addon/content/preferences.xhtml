@@ -1,0 +1,134 @@
+<linkset>
+  <html:link rel="localization" href="__addonRef__-preferences.ftl" />
+</linkset>
+<vbox
+  id="zotero-prefpane-__addonRef__"
+  onload="Zotero.__addonInstance__.hooks.onPrefsEvent('load', { window })"
+>
+  <groupbox>
+    <label><html:h2 data-l10n-id="pref-voice-title"></html:h2></label>
+    <hbox align="center">
+      <label data-l10n-id="pref-voice" control="__addonRef__-voice" />
+      <menulist id="__addonRef__-voice" preference="voice" native="true">
+        <menupopup>
+          <menuitem label="Heart (US ♀) — best" value="af_heart" />
+          <menuitem label="Bella (US ♀)" value="af_bella" />
+          <menuitem label="Nicole (US ♀)" value="af_nicole" />
+          <menuitem label="Emma (UK ♀)" value="bf_emma" />
+          <menuitem label="Aoede (US ♀)" value="af_aoede" />
+          <menuitem label="Kore (US ♀)" value="af_kore" />
+          <menuitem label="Sarah (US ♀)" value="af_sarah" />
+          <menuitem label="Fenrir (US ♂)" value="am_fenrir" />
+          <menuitem label="Michael (US ♂)" value="am_michael" />
+          <menuitem label="Puck (US ♂)" value="am_puck" />
+          <menuitem label="Fable (UK ♂)" value="bm_fable" />
+          <menuitem label="George (UK ♂)" value="bm_george" />
+          <menuitem label="Isabella (UK ♀)" value="bf_isabella" />
+          <menuitem label="Alloy (US ♀)" value="af_alloy" />
+          <menuitem label="Nova (US ♀)" value="af_nova" />
+          <menuitem label="Sky (US ♀)" value="af_sky" />
+          <menuitem label="Lewis (UK ♂)" value="bm_lewis" />
+        </menupopup>
+      </menulist>
+      <button id="__addonRef__-preview" data-l10n-id="pref-preview" />
+    </hbox>
+    <hbox align="center">
+      <label data-l10n-id="pref-speed" control="__addonRef__-speed" />
+      <menulist id="__addonRef__-speed" preference="speed" native="true">
+        <menupopup>
+          <menuitem label="0.8×" value="0.8" />
+          <menuitem label="0.9×" value="0.9" />
+          <menuitem label="1.0×" value="1.0" />
+          <menuitem label="1.1×" value="1.1" />
+          <menuitem label="1.25×" value="1.25" />
+          <menuitem label="1.5×" value="1.5" />
+          <menuitem label="1.75×" value="1.75" />
+          <menuitem label="2.0×" value="2.0" />
+        </menupopup>
+      </menulist>
+    </hbox>
+    <checkbox preference="stripCitations" data-l10n-id="pref-strip-citations" />
+    <checkbox
+      preference="stopAtReferences"
+      data-l10n-id="pref-stop-at-references"
+    />
+    <hbox align="center">
+      <label data-l10n-id="pref-shortcut" control="__addonRef__-shortcut" />
+      <html:input
+        type="text"
+        id="__addonRef__-shortcut"
+        preference="shortcut"
+        style="width: 12em"
+      />
+    </hbox>
+    <label class="form-text" data-l10n-id="pref-shortcut-help" />
+  </groupbox>
+
+  <groupbox>
+    <label><html:h2 data-l10n-id="pref-model-title"></html:h2></label>
+    <hbox align="center">
+      <label data-l10n-id="pref-dtype" control="__addonRef__-dtype" />
+      <menulist id="__addonRef__-dtype" preference="dtype" native="true">
+        <menupopup>
+          <menuitem data-l10n-id="pref-dtype-fp16" value="fp16" />
+          <menuitem data-l10n-id="pref-dtype-q8" value="q8" />
+          <menuitem data-l10n-id="pref-dtype-fp32" value="fp32" />
+        </menupopup>
+      </menulist>
+    </hbox>
+    <hbox align="center">
+      <label data-l10n-id="pref-workers" control="__addonRef__-workers" />
+      <html:input
+        type="number"
+        min="0"
+        max="8"
+        id="__addonRef__-workers"
+        preference="workers"
+        style="width: 5em"
+      />
+    </hbox>
+    <label class="form-text" data-l10n-id="pref-workers-help" />
+    <checkbox preference="preload" data-l10n-id="pref-preload" />
+    <hbox align="center">
+      <label data-l10n-id="pref-unload" control="__addonRef__-unload" />
+      <html:input
+        type="number"
+        min="0"
+        max="1440"
+        id="__addonRef__-unload"
+        preference="unloadAfterMinutes"
+        style="width: 5em"
+      />
+    </hbox>
+    <label class="form-text" data-l10n-id="pref-unload-help" />
+    <hbox align="center">
+      <label data-l10n-id="pref-mirror" control="__addonRef__-mirror" />
+      <html:input
+        type="text"
+        id="__addonRef__-mirror"
+        preference="mirror"
+        style="flex: 1"
+      />
+    </hbox>
+    <hbox align="center">
+      <label data-l10n-id="pref-model-dir" control="__addonRef__-model-dir" />
+      <html:input
+        type="text"
+        id="__addonRef__-model-dir"
+        preference="modelDir"
+        style="flex: 1"
+      />
+    </hbox>
+    <hbox align="center">
+      <label data-l10n-id="pref-model-status" />
+      <label id="__addonRef__-model-status" />
+      <button id="__addonRef__-clear-cache" data-l10n-id="pref-clear-cache" />
+    </hbox>
+    <label class="form-text" data-l10n-id="pref-model-help" />
+  </groupbox>
+
+  <html:label
+    data-l10n-id="pref-help"
+    data-l10n-args='{"time": "__buildTime__","name": "__addonName__","version":"__buildVersion__"}'
+  ></html:label>
+</vbox>

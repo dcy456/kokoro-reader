@@ -1,0 +1,58 @@
+#kokororeader-bar {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: min(720px, calc(100vw - 32px));
+  padding: 6px 8px;
+  border: 1px solid var(--material-border-quarternary, rgba(0, 0, 0, 0.15));
+  border-radius: 10px;
+  background: var(--material-toolbar, #f5f5f5);
+  color: var(--fill-primary, #222);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  font: message-box;
+  font-size: 13px;
+}
+
+#kokororeader-bar[hidden] {
+  display: none;
+}
+
+.kokororeader-button {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.kokororeader-button:hover:not(:disabled) {
+  background: var(--fill-quinary, rgba(0, 0, 0, 0.08));
+}
+
+.kokororeader-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.kokororeader-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.kokororeader-select {
+  flex: none;
+  max-width: 140px;
+  font: inherit;
+}
