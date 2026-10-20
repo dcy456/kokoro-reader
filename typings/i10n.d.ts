@@ -3,6 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 export type FluentMessageId =
+  | 'bar-chunk-failed'
   | 'bar-downloading'
   | 'bar-loading'
   | 'bar-pause'

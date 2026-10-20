@@ -21,3 +21,4 @@ menu-read-from-here = 从这里开始朗读 (Kokoro)
 read-from-here-unavailable = 无法读取文档结构，只朗读选中的文字。
 read-from-here-no-text = 这个文档没有可朗读的文字（可能是没有 OCR 的扫描版 PDF）。
 bar-reading-document = 正在读取文档…
+bar-chunk-failed = ⚠ 这一句无法朗读：{ $text }

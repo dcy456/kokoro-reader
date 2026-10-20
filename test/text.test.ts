@@ -20,6 +20,14 @@ describe("text", function () {
 
     it("keeps real hyphens", function () {
       assert.equal(cleanText("state-of-the-art", keep), "state-of-the-art");
+      assert.equal(
+        cleanText("pre- and post-processing", keep),
+        "pre- and post-processing",
+      );
+      assert.equal(
+        cleanText("low- or high-frequency", keep),
+        "low- or high-frequency",
+      );
     });
 
     it("expands ligatures and joins lines", function () {
@@ -33,13 +41,13 @@ describe("text", function () {
       );
     });
 
-    it("removes author-year citations but keeps other parentheses", function () {
+    it("preserves author-year citations and parenthetical text", function () {
       assert.equal(
         cleanText(
           "Transformers (Vaswani et al., 2017; Devlin et al. 2019) work.",
           strip,
         ),
-        "Transformers work.",
+        "Transformers (Vaswani et al., 2017; Devlin et al. 2019) work.",
       );
       assert.equal(
         cleanText("We use data (collected in 2020) here.", strip),
@@ -96,6 +104,21 @@ describe("text", function () {
       assert.equal(
         cleanText("See Fig. 3 and Eq. (2), e.g. accuracy, i.e. F1.", keep),
         "See Figure 3 and Equation (2), for example, accuracy, that is, F1.",
+      );
+    });
+
+    it("pronounces mathematical, technical and everyday symbols naturally", function () {
+      assert.equal(
+        cleanText("Precision & recall improved by 5%, with p < 0.05.", keep),
+        "Precision and recall improved by 5 percent, with p less than 0.05.",
+      );
+      assert.equal(
+        cleanText("Train w/o dropout when alpha = 0.1 ± 0.02.", keep),
+        "Train without dropout when alpha equals 0.1 plus or minus 0.02.",
+      );
+      assert.equal(
+        cleanText("Temp is 25°C and cost is ~ 10.", keep),
+        "Temp is 25 degrees Celsius and cost is approximately 10.",
       );
     });
   });

@@ -4,15 +4,19 @@ import { getPref, setPref } from "../src/utils/prefs";
 import { listener, plugin, waitFor } from "./helpers";
 
 const TEXT =
-  "Attention mechanisms [3] let models focus on relevant inputs. They are widely used (Bahdanau et al., 2015).";
+  "Attention mechanisms [3] let models focus on relevant inputs. They are widely used [5, 8].";
 
 describe("reader UI", function () {
   let win: _ZoteroTypes.MainWindow;
   let doc: Document;
   let container: HTMLElement;
+  let stripCitations: boolean;
 
   before(function () {
     if (!getPref("modelDir")) this.skip();
+    // These tests check the cleaned text, whatever the user's default is.
+    stripCitations = getPref("stripCitations");
+    setPref("stripCitations", true);
     win = Zotero.getMainWindow();
     doc = win.document;
     container = doc.createElementNS(
@@ -23,6 +27,7 @@ describe("reader UI", function () {
   });
 
   after(function () {
+    if (stripCitations !== undefined) setPref("stripCitations", stripCitations);
     plugin()?.api.player.stop();
     container?.remove();
   });

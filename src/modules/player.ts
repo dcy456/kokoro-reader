@@ -37,7 +37,7 @@ class Player {
    * Timing of the current read: how long until the first audio, and every
    * pause between chunks while waiting for synthesis (milliseconds).
    */
-  stats = { firstAudioMs: 0, gapsMs: [] as number[] };
+  stats = { firstAudioMs: 0, gapsMs: [] as number[], skipped: [] as string[] };
   /** Chunks of the current read (read-only outside this class). */
   sentences: string[] = [];
   /** jobs[i] is the synthesis of sentences[i]; filled ahead of `index`. */
@@ -68,7 +68,7 @@ class Player {
     bar.show();
     const started = Date.now();
     let lastEnd = 0;
-    this.stats = { firstAudioMs: 0, gapsMs: [] };
+    this.stats = { firstAudioMs: 0, gapsMs: [], skipped: [] };
 
     try {
       await engine.ensureReady((fraction) => {
@@ -76,9 +76,28 @@ class Player {
       });
       if (session !== this.session) return;
       bar.setLoading();
+      let failures = 0;
       for (; this.index < sentences.length; this.index++) {
         this.prefetch();
-        const audio = await this.awaitJob(this.index);
+        let audio: Audio;
+        try {
+          audio = await this.awaitJob(this.index);
+        } catch (e) {
+          if (session !== this.session) return;
+          // One chunk the model can't voice shouldn't end the whole read;
+          // say which one was skipped. Repeated failures mean something
+          // is broken, so stop then.
+          if (++failures >= 3) throw e;
+          ztoolkit.log("Chunk failed, skipping", sentences[this.index], e);
+          this.stats.skipped.push(sentences[this.index]);
+          bar.setStatus(
+            getString("bar-chunk-failed", {
+              args: { text: sentences[this.index] },
+            }),
+          );
+          continue;
+        }
+        failures = 0;
         if (session !== this.session) return;
         bar.setSentence(sentences[this.index], this.index, sentences.length);
         if (this.state === "loading") this.setState("playing");

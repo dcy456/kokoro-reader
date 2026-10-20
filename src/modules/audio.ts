@@ -5,7 +5,9 @@
  * it delays the first word. Trim it and keep a pause that fits the text.
  */
 
-const THRESHOLD = 0.01;
+// Lower threshold and larger lead margin protect soft onsets (such as "th", "f", "s", "h")
+// from being clipped as silence.
+const THRESHOLD = 0.002;
 
 /** Pause to keep after a chunk, in seconds, judged by how its text ends. */
 export function pauseAfter(text: string): number {
@@ -17,7 +19,7 @@ export function pauseAfter(text: string): number {
 export function trimSilence(
   pcm: Float32Array,
   sampleRate: number,
-  { lead = 0.03, tail = 0.3 } = {},
+  { lead = 0.08, tail = 0.3 } = {},
 ): Float32Array {
   let first = 0;
   while (first < pcm.length && Math.abs(pcm[first]) < THRESHOLD) first++;

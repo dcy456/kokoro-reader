@@ -28,11 +28,17 @@ export async function registerPrefsScripts(win: Window) {
     );
   };
 
-  $("preview")?.addEventListener("command", () => {
+  const addAction = (id: string, action: () => void | Promise<void>) => {
+    const el = $(id);
+    el?.addEventListener("command", action);
+    el?.addEventListener("click", action);
+  };
+
+  addAction("preview", () => {
     player.readText(getString("prefs-sample"));
   });
 
-  $("clear-cache")?.addEventListener("command", async () => {
+  addAction("clear-cache", async () => {
     player.stop();
     await clearModelCache();
     await refreshStatus();

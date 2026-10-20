@@ -101,6 +101,13 @@ describe("structure", function () {
     assert.equal(sentenceStart(text, 7), 5);
     assert.equal(sentenceStart(text, 5), 5);
     assert.equal(sentenceStart(text, 18), 16);
+
+    const paperText =
+      "In Fig. 1 we show the result. According to Smith et al. the method works. Done.";
+    // Offset inside "we show" (after Fig. 1) should still trace back to index 0 ("In Fig. 1...")
+    assert.equal(sentenceStart(paperText, 18), 0);
+    // Offset inside "the method" (after Smith et al.) should trace back to index 30 ("According to...")
+    assert.equal(sentenceStart(paperText, 60), 30);
   });
 
   it("reads from a sentence to the References heading", function () {

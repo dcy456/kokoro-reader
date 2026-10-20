@@ -106,11 +106,34 @@ async function downloadMissing(
     await IOUtils.remove(part, { ignoreAbsent: true });
     const reader =
       response.body!.getReader() as ReadableStreamDefaultReader<Uint8Array>;
+    const CHUNK_BUFFER_SIZE = 1024 * 1024; // 1 MB buffer to batch writes and avoid UI stutter
+    let buffer: Uint8Array[] = [];
+    let bufferBytes = 0;
+    const flush = async () => {
+      if (!buffer.length) return;
+      const merged = new Uint8Array(bufferBytes);
+      let offset = 0;
+      for (const chunk of buffer) {
+        merged.set(chunk, offset);
+        offset += chunk.byteLength;
+      }
+      await IOUtils.write(part, merged, { mode: "appendOrCreate" });
+      buffer = [];
+      bufferBytes = 0;
+    };
+
     for (;;) {
       const { done, value } = await reader.read();
-      if (done) break;
-      await IOUtils.write(part, value, { mode: "appendOrCreate" });
+      if (done) {
+        await flush();
+        break;
+      }
+      buffer.push(value);
+      bufferBytes += value.byteLength;
       received += value.byteLength;
+      if (bufferBytes >= CHUNK_BUFFER_SIZE) {
+        await flush();
+      }
       if (total) onProgress?.(Math.min(received / total, 1));
     }
     await IOUtils.move(part, target);
@@ -132,6 +155,7 @@ async function readBuffer(path: string): Promise<ArrayBuffer> {
 
 interface Job {
   id: number;
+  retry: boolean;
   /** The start of a read: may use the worker kept free for starts. */
   urgent: boolean;
   text: string;
@@ -187,6 +211,8 @@ class Engine {
   /** Learned costs: synthesis time per character, and time to load a worker. */
   private msPerChar = 80;
   private loadMs = 3000;
+  /** Chunks whose first synthesis was NaN and a retry fixed (see retry.ts). */
+  rescued = 0;
   /** Seconds of audio per second of compute for the last request (>1 = faster than real time). */
   lastSpeedFactor = 0;
   /** Overrides the pool size (tests and benchmarks); 0 = pref or default. */
@@ -274,7 +300,9 @@ class Engine {
         reject(new Error(event.message || "TTS worker failed to start"));
       };
     });
-    member.ready.catch(() => {});
+    member.ready.catch(() => {
+      this.pool = this.pool.filter((m) => m !== member);
+    });
     this.pool.push(member);
 
     (async () => {
@@ -327,6 +355,7 @@ class Engine {
         text: job.text,
         voice: job.voice,
         speed: job.speed,
+        retry: job.retry,
       };
       member.worker.postMessage(request);
     }
@@ -340,6 +369,12 @@ class Engine {
     if (msg.type === "audio") {
       const seconds = msg.pcm.length / msg.sampleRate;
       this.lastSpeedFactor = seconds / (msg.elapsedMs / 1000);
+      if (msg.retried) {
+        this.rescued++;
+        Zotero.debug(
+          `[Kokoro Reader] NaN audio, rescued by retry: ${current.job.text}`,
+        );
+      }
       const perChar = msg.elapsedMs / Math.max(1, current.job.text.length);
       this.msPerChar = 0.8 * this.msPerChar + 0.2 * perChar;
       if (!current.abandoned) {
@@ -399,7 +434,7 @@ class Engine {
     text: string,
     voice: string,
     speed: number,
-    { urgent = false } = {},
+    { urgent = false, retry = true } = {},
   ): Promise<Audio> {
     const generation = this.generation;
     await this.ensureReady();
@@ -410,6 +445,7 @@ class Engine {
       this.queue.push({
         id: this.nextId++,
         urgent,
+        retry,
         text,
         voice,
         speed,
@@ -426,7 +462,10 @@ class Engine {
     for (const job of this.queue.splice(0)) {
       job.reject(new Error("cancelled"));
     }
-    for (const member of [...this.pool]) this.abandon(member);
+    for (const member of [...this.pool]) {
+      member.worker.postMessage({ type: "clear" });
+      this.abandon(member);
+    }
   }
 
   /** Free the workers' memory after a while without reading. */

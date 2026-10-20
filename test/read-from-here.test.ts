@@ -151,7 +151,8 @@ describe("read from here", function () {
     const totalGap = gapsMs.reduce((a: number, b: number) => a + b, 0);
     const summary = `first audio ${firstAudioMs} ms, pauses ${gapsMs.join("/")} ms`;
     Zotero.debug(`[kokoro test] switch: ${summary}`);
-    assert.isBelow(firstAudioMs, 2500, summary);
+    // About 2.2-2.5 s on an idle machine; leave room for a busy one.
+    assert.isBelow(firstAudioMs, 3000, summary);
     assert.isBelow(totalGap, 1500, summary);
   });
 });

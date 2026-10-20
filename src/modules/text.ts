@@ -52,6 +52,31 @@ const ABBREVIATIONS: Array<[RegExp, string]> = [
   [/\bNo\.(?=\s*\d)/g, "Number"],
 ];
 
+// Spoken alternatives for mathematical, technical and everyday symbols so
+// they are naturally pronounced rather than skipped, dropped or muted by the TTS model.
+const SPOKEN_SYMBOLS: Array<[RegExp, string]> = [
+  [/\bw\/o\b/gi, "without"],
+  [/\bw\/\b/gi, "with"],
+  [/\s*&\s*/g, " and "],
+  [/\s*%\s*/g, " percent "],
+  [/\s*\+\s*/g, " plus "],
+  [/\s*=\s*/g, " equals "],
+  [/\s*(?:≤|<=)\s*/g, " less than or equal to "],
+  [/\s*(?:≥|>=)\s*/g, " greater than or equal to "],
+  [/\s*(?:≠|!=)\s*/g, " not equal to "],
+  [/\s*<\s*/g, " less than "],
+  [/\s*>\s*/g, " greater than "],
+  [/\s*±\s*/g, " plus or minus "],
+  [/\s*~\s*/g, " approximately "],
+  [/\s*@\s*/g, " at "],
+  [/\s*#(?=\d)/g, " number "],
+  [/\s*°C\b/g, " degrees Celsius"],
+  [/\s*°\s*/g, " degrees "],
+  [/\s*×\s*/g, " times "],
+  [/\s*÷\s*/g, " divided by "],
+  [/(?<=[A-Za-z0-9])\/(?=[A-Za-z0-9])/g, " slash "],
+];
+
 // [12], [3, 5], [3-7], [3–7, 9]
 const NUMERIC_CITATION = /\s*\[\d+(?:\s*[,;–—-]\s*\d+)*\]/g;
 
@@ -133,19 +158,18 @@ export function cleanText(raw: string, opts: CleanOptions): string {
   text = text.replace(/\^([A-Za-z0-9]+)/g, " to the power $1");
 
   // Words hyphenated across a line break: "algo-\nrithm" or "algo- rithm".
+  // Avoid joining suspensive hyphens like "pre- and post-processing".
   text = text.replace(/([a-z])-\s*\n\s*([a-z])/g, "$1$2");
-  text = text.replace(/([a-z])- ([a-z])/g, "$1$2");
+  text = text.replace(/([a-z])-\s+(?!(?:and|or|to)\b)([a-z])/gi, "$1$2");
   text = text.replace(/\s*\n\s*/g, " ");
+
+  // Pronounce symbols naturally rather than skipping or dropping them
+  for (const [pattern, spoken] of SPOKEN_SYMBOLS) {
+    text = text.replace(pattern, spoken);
+  }
 
   if (opts.stripCitations) {
     text = text.replace(NUMERIC_CITATION, "");
-    text = text.replace(
-      /\s*\(([^()]*\d{4}[a-z]?)\)/g,
-      (match, inner: string) =>
-        inner.split(";").every((part) => AUTHOR_YEAR.test(part.trim()))
-          ? ""
-          : match,
-    );
   }
 
   for (const [pattern, replacement] of ABBREVIATIONS) {
@@ -169,7 +193,7 @@ export function splitSentences(
     // when the next sentence starts with a capital, digit, quote or bracket.
     .split(/(?<=[.!?]["'\u201D)\]]?)\s+(?=["'\u201C([]?[A-Z0-9])/)
     .map((s) => s.trim())
-    .filter((s) => /[A-Za-z0-9]/.test(s));
+    .filter((s) => /\S/.test(s));
   return sentences.flatMap((s) => capLength(s, maxChars));
 }
 

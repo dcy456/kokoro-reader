@@ -9,6 +9,7 @@
 import { env } from "@huggingface/transformers";
 import { KokoroTTS, type GenerateOptions } from "kokoro-js";
 import type { WorkerRequest, WorkerResponse } from "./protocol";
+import { retryAttempts } from "./retry";
 
 declare const self: DedicatedWorkerGlobalScope;
 
@@ -82,6 +83,34 @@ async function init(
   });
 }
 
+function isFinite32(pcm: Float32Array): boolean {
+  for (let i = 0; i < pcm.length; i++) {
+    if (!Number.isFinite(pcm[i])) return false;
+  }
+  return true;
+}
+
+async function generateChecked(
+  text: string,
+  voice: GenerateOptions["voice"],
+  speed: number,
+  retry: boolean,
+): Promise<{ pcm: Float32Array; sampleRate: number; retried: boolean }> {
+  const attempts = [{ text, speed }];
+  if (retry) attempts.push(...retryAttempts(text, speed));
+  for (const [i, attempt] of attempts.entries()) {
+    const audio = await tts!.generate(attempt.text, {
+      voice,
+      speed: attempt.speed,
+    });
+    const pcm = audio.audio as Float32Array;
+    if (isFinite32(pcm)) {
+      return { pcm, sampleRate: audio.sampling_rate, retried: i > 0 };
+    }
+  }
+  throw new Error(`Silent output (NaN) for: ${text}`);
+}
+
 async function synth(
   msg: Extract<WorkerRequest, { type: "synth" }>,
   requestGeneration: number,
@@ -89,18 +118,20 @@ async function synth(
   if (requestGeneration !== generation) return;
   if (!tts) throw new Error("Model is not loaded");
   const started = performance.now();
-  const audio = await tts.generate(msg.text, {
-    voice: msg.voice as GenerateOptions["voice"],
-    speed: msg.speed,
-  });
-  const pcm = audio.audio as Float32Array;
+  const { pcm, sampleRate, retried } = await generateChecked(
+    msg.text,
+    msg.voice as GenerateOptions["voice"],
+    msg.speed,
+    msg.retry ?? true,
+  );
   post(
     {
       type: "audio",
       id: msg.id,
       pcm,
-      sampleRate: audio.sampling_rate,
+      sampleRate,
       elapsedMs: performance.now() - started,
+      retried,
     },
     [pcm.buffer],
   );

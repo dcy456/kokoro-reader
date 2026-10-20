@@ -13,7 +13,15 @@ export type WorkerRequest =
       files: Record<string, ArrayBuffer>;
     }
   | { type: "voice"; name: string; data: ArrayBuffer }
-  | { type: "synth"; id: number; text: string; voice: string; speed: number }
+  | {
+      type: "synth";
+      id: number;
+      text: string;
+      voice: string;
+      speed: number;
+      /** Retry reworded when the output is NaN (default true; off in tests). */
+      retry?: boolean;
+    }
   /** Drop queued synth requests; the one in progress still finishes. */
   | { type: "clear" };
 
@@ -30,5 +38,7 @@ export type WorkerResponse =
       pcm: Float32Array;
       sampleRate: number;
       elapsedMs: number;
+      /** The first attempt returned NaN audio; a reworded retry succeeded. */
+      retried: boolean;
     }
   | { type: "error"; id?: number; message: string };

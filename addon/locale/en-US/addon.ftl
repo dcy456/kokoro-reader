@@ -21,3 +21,4 @@ menu-read-from-here = Read Aloud from Here (Kokoro)
 read-from-here-unavailable = Couldn't read the document structure; reading the selection only.
 read-from-here-no-text = This document has no readable text (it may be a scanned PDF without OCR).
 bar-reading-document = Reading the document…
+bar-chunk-failed = ⚠ Couldn't voice: { $text }

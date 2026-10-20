@@ -48,6 +48,7 @@ Find them under **Zotero Settings → Kokoro Reader**.
 - **Shared queue.** A worker takes the next chunk only when it is idle, and one worker is kept free for the start of the next read.
 - **Stopping mid-read.** ONNX Runtime can't be interrupted. When you stop, a worker that is still busy is replaced only if finishing its chunk would take longer than loading a fresh copy.
 - **Chunk ramp.** Each read starts with a 16-character chunk (Kokoro needs ~2.2 s even for two words). Each later chunk is allowed to grow with the audio already queued before it, so it is ready by the time its turn comes.
+- **No silent chunks.** With the fp16 weights on Zotero's WebAssembly backend, about 1 chunk in 20 of real paper text overflows, and the model returns an all-NaN waveform that plays as silence. "Theorem 1." and "Using ZK proofs," both did. The worker checks every waveform and retries at a 5% faster speed or with different final punctuation, which fixed every such chunk we found (16 of 300 on three papers). fp32 weights don't overflow, but need about 1 GB of memory per worker instead of 440 MB.
 - **Trimmed padding.** Kokoro pads every clip with ~0.8 s of silence, which is trimmed to a pause that fits the punctuation.
 
 Measured on an Apple M-series laptop with 4 workers: switching to another passage while reading gives first audio after 2.2–2.5 s, with no pauses over 0.2 s afterwards.

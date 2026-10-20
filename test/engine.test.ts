@@ -82,4 +82,30 @@ describe("kokoro engine", function () {
     );
     assert.isAbove(audio.pcm.length, 0);
   });
+
+  it("never returns silent (NaN) audio for inputs that overflow fp16", async function () {
+    this.timeout(5 * 60 * 1000);
+    // Each of these made the fp16 model return an all-NaN waveform.
+    const texts = [
+      "Theorem 1.",
+      "Lemma 2.",
+      "Definition 3.",
+      "Let n greater than or equal to 3.",
+      "Using zero-knowledge proofs,",
+      "To obtain active security over fields,",
+      "where C is the circuit to be computed.",
+    ];
+    const before = engine.rescued;
+    for (const text of texts) {
+      const audio = await report(() => engine.synth(text, "af_heart", 1));
+      assert.isTrue(
+        audio.pcm.every((x) => Number.isFinite(x)),
+        `NaN audio for ${text}`,
+      );
+      const peak = audio.pcm.reduce((m, x) => Math.max(m, Math.abs(x)), 0);
+      assert.isAbove(peak, 0.05, `silent audio for ${text}`);
+    }
+    // Guards against the test passing because the bug went away by itself.
+    if (getPref("dtype") === "fp16") assert.isAbove(engine.rescued, before);
+  });
 });

@@ -1,7 +1,7 @@
 {
   "name": "zotero-kokoro-reader",
   "type": "module",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Read selected PDF text aloud in Zotero with Kokoro, a free, offline neural voice.",
   "config": {
     "addonName": "Kokoro Reader",
@@ -12,17 +12,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OWNER/zotero-kokoro-reader.git"
+    "url": "git+https://github.com/dcy456/kokoro-reader.git"
   },
   "author": "Chengyi Dong",
   "bugs": {
-    "url": "https://github.com/OWNER/zotero-kokoro-reader/issues"
+    "url": "https://github.com/dcy456/kokoro-reader/issues"
   },
-  "homepage": "https://github.com/OWNER/zotero-kokoro-reader#readme",
+  "homepage": "https://github.com/dcy456/kokoro-reader#readme",
   "license": "AGPL-3.0-or-later",
   "scripts": {
     "start": "zotero-plugin serve",
-    "build": "zotero-plugin build && tsc --noEmit && tsc --noEmit -p src/worker",
+    "build": "NO_UPDATE_NOTIFIER=1 zotero-plugin build && tsc --noEmit && tsc --noEmit -p src/worker",
     "lint:check": "prettier --check . && eslint .",
     "lint:fix": "prettier --write . && eslint . --fix",
     "release": "zotero-plugin release",

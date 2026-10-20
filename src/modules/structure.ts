@@ -77,7 +77,6 @@ function spokenText(node: SDTNode, before: string): string {
     !!node.refs?.length ||
     /^[*\u2020\u2021\u00A7\u2217]+$/.test(text.trim()) ||
     !before.trim() ||
-    /[A-Za-z]{3}[.,;:!?)\]]?\s*$/.test(before) ||
     /\s$/.test(before);
   return isMarker ? "" : `^${text}`;
 }
@@ -170,10 +169,13 @@ export function compareRefs(a: Ref, b: Ref): number {
   return a.length - b.length;
 }
 
+const SENTENCE_BOUNDARY =
+  /(?<!\b(?:Fig|Eq|Tab|Sec|Ref|No|approx|resp|vs|cf|al|Dr|Mr|Mrs|Prof))[.!?]["'\u201D)\]]?\s+(?=["'\u201C([]?[A-Z0-9])/gi;
+
 /** Back up from `offset` to the start of the sentence that contains it. */
 export function sentenceStart(text: string, offset: number): number {
   let start = 0;
-  for (const match of text.matchAll(/[.!?]["'”)\]]?\s+/g)) {
+  for (const match of text.matchAll(SENTENCE_BOUNDARY)) {
     const end = match.index! + match[0].length;
     if (end > offset) break;
     start = end;

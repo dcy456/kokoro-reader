@@ -3,7 +3,7 @@ pref("speed", "1.0");
 pref("dtype", "fp16");
 pref("mirror", "https://huggingface.co");
 pref("modelDir", "");
-pref("stripCitations", true);
+pref("stripCitations", false);
 pref("shortcut", "alt,shift,r");
 pref("workers", 0);
 pref("stopAtReferences", true);
