@@ -38,7 +38,6 @@ const LIGATURES: Record<string, string> = {
 const ABBREVIATIONS: Array<[RegExp, string]> = [
   [/\be\.\s?g\.(?:,)?/gi, "for example,"],
   [/\bi\.\s?e\.(?:,)?/gi, "that is,"],
-  [/\bet al\./g, "et al"],
   [/\bw\.r\.t\./gi, "with respect to"],
   [/\bcf\./gi, "compare"],
   [/\bvs\./gi, "versus"],
@@ -191,7 +190,12 @@ export function splitSentences(
   const sentences = text
     // Break after . ! ? (optionally followed by a closing quote or bracket)
     // when the next sentence starts with a capital, digit, quote or bracket.
-    .split(/(?<=[.!?]["'\u201D)\]]?)\s+(?=["'\u201C([]?[A-Z0-9])/)
+    // Not after "et al.": it is usually followed by a year or the rest of
+    // the sentence ("Devlin et al. 2019"); a sentence that really ends with
+    // it is rare and just stays joined to the next one.
+    .split(
+      /(?<=[.!?]["'\u201D)\]]?)(?<!\bet al\.["'\u201D)\]]?)\s+(?=["'\u201C([]?[A-Z0-9])/,
+    )
     .map((s) => s.trim())
     .filter((s) => /\S/.test(s));
   return sentences.flatMap((s) => capLength(s, maxChars));

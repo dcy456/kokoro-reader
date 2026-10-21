@@ -132,7 +132,18 @@ describe("text", function () {
             keep,
           ),
         ),
-        ["Smith et al found it.", "The value is 3.5 here!", "Done."],
+        ["Smith et al. found it.", "The value is 3.5 here!", "Done."],
+      );
+    });
+
+    it("doesn't split after et al.", function () {
+      assert.deepEqual(
+        splitSentences("As shown by Devlin et al. 2019, it works. Next one."),
+        ["As shown by Devlin et al. 2019, it works.", "Next one."],
+      );
+      assert.deepEqual(
+        splitSentences("Following Vaswani et al. (2017), we use attention."),
+        ["Following Vaswani et al. (2017), we use attention."],
       );
     });
 
